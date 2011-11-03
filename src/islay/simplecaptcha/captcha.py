@@ -1,3 +1,5 @@
+import urllib
+
 from lxml import html
 from lxml.etree import XMLSyntaxError, Element
 from webob import Request, Response
@@ -16,6 +18,22 @@ class CaptchaMiddleware(object):
         del environ['HTTP_ACCEPT_ENCODING']
         
         request = Request(environ)
+
+        if request.method == "POST":
+            valid = 'isHuman' in request.POST
+            if not valid:
+                params = urllib.urlencode(request.POST)
+                if request.referrer is None:
+                    # huh....
+                    raise ValueError
+                from_page = request.referrer.split("?")[0] + "?" + params
+                response = Response(status=302, location=from_page)
+                return response(environ, start_response)
+            else:
+                post = request.POST.copy()
+                del post['isHuman']
+                request.body = urllib.urlencode(post)
+        
         response = request.get_response(self.app)
         if response.content_type == 'text/html':
             # We don't want to deal with images and the like
