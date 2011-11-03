@@ -25,6 +25,8 @@ setup(name='islay.simplecaptcha',
       install_requires=[
           'setuptools',
           'WebOb',
+          'Paste',
+          'lxml',
           # -*- Extra requirements: -*-
       ],
       entry_points="""
