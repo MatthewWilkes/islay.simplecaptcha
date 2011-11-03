@@ -14,6 +14,7 @@ class CaptchaMiddleware(object):
         self.app = app
     
     def __call__(self, environ, start_response):
+        
         # Before we go any further, gzip is hard to parse, don't ask for it
         del environ['HTTP_ACCEPT_ENCODING']
         
@@ -35,14 +36,16 @@ class CaptchaMiddleware(object):
                 request.body = urllib.urlencode(post)
         
         response = request.get_response(self.app)
+        
+        # We don't want to deal with images and the like
         if response.content_type == 'text/html':
-            # We don't want to deal with images and the like
             try:
                 parsed = html.fromstring(response.body)
             except (XMLSyntaxError, TypeError):
                 return response(environ, start_response)
             forms = parsed.xpath("//form")
             index = 0
+
             for form in forms:
                 if form.method.upper() == "GET":
                     continue
@@ -62,5 +65,6 @@ class CaptchaMiddleware(object):
                 submit.addprevious(checkbox)
                 submit.addprevious(label)
             response.body = html.tostring(parsed)
+
         return response(environ, start_response)
     
