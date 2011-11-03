@@ -14,7 +14,6 @@ class CaptchaMiddleware(object):
         self.app = app
     
     def __call__(self, environ, start_response):
-        
         # Before we go any further, gzip is hard to parse, don't ask for it
         del environ['HTTP_ACCEPT_ENCODING']
         
