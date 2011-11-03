@@ -26,16 +26,23 @@ class CaptchaMiddleware(object):
             forms = parsed.xpath("//form")
             index = 0
             for form in forms:
+                if form.method.upper() == "GET":
+                    continue
+                try:
+                    tags = [child for child in form.iterdescendants() if child.tag=='input']
+                    submit = tags[-1] # maybe?
+                except IndexError:
+                    # Empty forms are weird.
+                    continue
+                
                 box_id = "captcha%d" % index
+                index += 1
                 checkbox = Element("input", type="checkbox", name="isHuman", value="1", id=box_id)
                 label = Element("label", attrib={'for':box_id})
                 label.text = "I am a human"
-                length = len(form.getchildren())
-                if length == 1:
-                    # Hack to add the captcha at the end of single element forms
-                    length = 2
-                form.insert(length - 1, checkbox) # The submit button is probably last
-                form.insert(length, label)
+
+                submit.addprevious(checkbox)
+                submit.addprevious(label)
             response.body = html.tostring(parsed)
         return response(environ, start_response)
     
