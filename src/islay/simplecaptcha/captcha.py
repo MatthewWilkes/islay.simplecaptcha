@@ -1,7 +1,7 @@
 from webob import Request, Response
 
 def CaptchaFactory(global_config, **local_conf):
-    return CapchaMiddleware
+    return CaptchaMiddleware
 
 class CaptchaMiddleware(object):
     """An endpoint"""
